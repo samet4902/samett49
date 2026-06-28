@@ -1,0 +1,486 @@
+```html
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Retro Uzay Savaşı - Galaxy Defender</title>
+    <!-- Tailwind CSS ve Font Awesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #03001e;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        canvas {
+            display: block;
+            background: radial-gradient(circle, #0f0c1b 0%, #03001e 100%);
+        }
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center h-screen w-screen relative no-select">
+
+    <!-- Oyun Tuvali -->
+    <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
+
+    <!-- Kullanıcı Arayüzü (HUD) -->
+    <div id="hud" class="absolute top-4 left-4 right-4 z-10 flex justify-between items-center text-white pointer-events-none hidden">
+        <div class="flex flex-col gap-1">
+            <div class="text-xs text-cyan-400 tracking-widest">SKOR</div>
+            <div id="scoreVal" class="text-2xl font-black text-white">0</div>
+        </div>
+        
+        <div class="flex flex-col items-end gap-1">
+            <div class="text-xs text-rose-400 tracking-widest">KALKAN</div>
+            <div class="w-32 bg-gray-900 border border-rose-500/30 h-4 rounded-full overflow-hidden p-0.5">
+                <div id="shieldBar" class="bg-gradient-to-r from-rose-500 to-red-600 h-full rounded-full transition-all duration-100" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aktif Güçlendirme Göstergesi -->
+    <div id="powerupIndicator" class="absolute top-20 right-4 z-10 hidden text-right pointer-events-none">
+        <span id="powerupText" class="text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 px-3 py-1 rounded-full font-bold tracking-widest animate-pulse">
+            ÇİFT LAZER
+        </span>
+    </div>
+
+    <!-- Ana Menü -->
+    <div id="menuScreen" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 px-6 text-center">
+        <div class="max-w-md w-full p-8 rounded-2xl bg-gradient-to-b from-indigo-950/40 to-slate-900/60 border border-indigo-500/30 backdrop-blur-md shadow-2xl">
+            <h1 class="text-4xl md:text-5xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-500 mb-2 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)] animate-pulse">
+                GALAXY DEFENDER
+            </h1>
+            <p class="text-slate-400 text-sm mb-8 tracking-widest uppercase">Retro Uzay Savaşçısı</p>
+
+            <div class="space-y-4 mb-8">
+                <button id="startBtn" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-[1.02] active:scale-95 tracking-widest">
+                    OYUNU BAŞLAT
+                </button>
+                <button id="soundToggleBtn" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm tracking-wide">
+                    <i id="soundIcon" class="fas fa-volume-up"></i> <span id="soundText">SES: AÇIK</span>
+                </button>
+            </div>
+
+            <div class="text-slate-500 text-xs text-left border-t border-slate-800 pt-4 space-y-2">
+                <p class="font-bold text-slate-400 tracking-wide uppercase">Kontroller:</p>
+                <p class="flex justify-between"><span>Masaüstü Hareket:</span> <span class="text-slate-300 font-mono">Yön Tuşları / WASD</span></p>
+                <p class="flex justify-between"><span>Masaüstü Ateş:</span> <span class="text-slate-300 font-mono">Boşluk / Mouse Sol Tık</span></p>
+                <p class="flex justify-between"><span>Mobil Cihazlar:</span> <span class="text-slate-300">Sürükle (Otomatik Ateş)</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oyun Bitti Ekranı -->
+    <div id="gameOverScreen" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 px-6 text-center hidden">
+        <div class="max-w-md w-full p-8 rounded-2xl bg-gradient-to-b from-rose-950/40 to-slate-900/60 border border-rose-500/30 backdrop-blur-md shadow-2xl">
+            <h2 class="text-4xl font-black tracking-wider text-rose-500 mb-2 drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]">
+                OYUN BİTTİ
+            </h2>
+            <!-- Kalkan bittiğinde görünecek özel mesaj -->
+            <p class="text-slate-300 text-base mb-6 tracking-wide font-semibold">
+                Kaybettiğin için Muş'u sevmiyorsun. 🥺
+            </p>
+
+            <div class="bg-black/40 border border-slate-800 rounded-xl p-4 mb-6 space-y-3">
+                <div class="flex justify-between items-center text-slate-400">
+                    <span class="text-sm">Yaptığın Skor:</span>
+                    <span id="finalScore" class="text-2xl font-bold text-cyan-400">0</span>
+                </div>
+                <div class="flex justify-between items-center text-slate-400 border-t border-slate-800/50 pt-2">
+                    <span class="text-sm">En Yüksek Skor:</span>
+                    <span id="highScore" class="text-xl font-bold text-yellow-400">0</span>
+                </div>
+            </div>
+
+            <button id="restartBtn" class="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-rose-500/20 transition-all transform hover:scale-[1.02] active:scale-95 tracking-widest">
+                YENİDEN DENE
+            </button>
+        </div>
+    </div>
+
+    <div id="touchGuide" class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 bg-white/5 border border-white/10 px-4 py-2 rounded-full text-[10px] text-white/40 pointer-events-none tracking-widest uppercase hidden md:hidden">
+        Gemiye Dokunup Sürükleyin
+    </div>
+
+    <script>
+        // --- SES SENTEZLEYİCİ (Web Audio API) ---
+        const SoundFX = {
+            enabled: true,
+            ctx: null,
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+
+            playLaser() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+                
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.15);
+            },
+
+            playExplosion() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                
+                const bufferSize = this.ctx.sampleRate * 0.4;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(400, now);
+                filter.frequency.exponentialRampToValueAtTime(10, now + 0.4);
+                
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                noise.start(now);
+                noise.stop(now + 0.4);
+            },
+
+            playPowerup() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+                
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.3);
+            },
+
+            playHurt() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.setValueAtTime(80, now + 0.1);
+                
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        };
+
+        // --- OYUN AYARLARI ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let gameState = 'MENU';
+        let score = 0;
+        let highscore = parseInt(localStorage.getItem('galaxy_defender_highscore') || '0');
+        let keys = {};
+        let touchActive = false;
+        let touchX = 0, touchY = 0;
+
+        // --- OYUNCU GEMİSİ ---
+        const player = {
+            x: 0,
+            y: 0,
+            width: 44,
+            height: 44,
+            speed: 7,
+            shield: 100,
+            maxShield: 100,
+            powerup: null,
+            powerupTimer: 0,
+            lastShot: 0,
+            shootCooldown: 220,
+
+            init() {
+                this.x = width / 2;
+                this.y = height - 100;
+                this.shield = 100;
+                this.powerup = null;
+                this.powerupTimer = 0;
+            },
+
+            update() {
+                if (keys['ArrowLeft'] || keys['KeyA']) this.x -= this.speed;
+                if (keys['ArrowRight'] || keys['KeyD']) this.x += this.speed;
+                if (keys['ArrowUp'] || keys['KeyW']) this.y -= this.speed;
+                if (keys['ArrowDown'] || keys['KeyS']) this.y += this.speed;
+
+                if (touchActive) {
+                    this.x += (touchX - this.x) * 0.15;
+                    this.y += (touchY - 60 - this.y) * 0.15;
+                }
+
+                if (this.x < this.width / 2) this.x = this.width / 2;
+                if (this.x > width - this.width / 2) this.x = width - this.width / 2;
+                if (this.y < this.height / 2) this.y = this.height / 2;
+                if (this.y > height - this.height / 2) this.y = height - this.height / 2;
+
+                if (this.powerup) {
+                    this.powerupTimer--;
+                    if (this.powerupTimer <= 0) {
+                        this.powerup = null;
+                        document.getElementById('powerupIndicator').classList.add('hidden');
+                    }
+                }
+
+                const now = Date.now();
+                if ((touchActive || keys['Space'] || mousePressed) && now - this.lastShot > this.shootCooldown) {
+                    this.shoot();
+                    this.lastShot = now;
+                }
+            },
+
+            shoot() {
+                SoundFX.playLaser();
+                if (this.powerup === 'triple') {
+                    lasers.push(new Laser(this.x, this.y - 15, 0, -12));
+                    lasers.push(new Laser(this.x - 10, this.y - 5, -3, -11));
+                    lasers.push(new Laser(this.x + 10, this.y - 5, 3, -11));
+                } else if (this.powerup === 'double') {
+                    lasers.push(new Laser(this.x - 15, this.y - 10, 0, -12));
+                    lasers.push(new Laser(this.x + 15, this.y - 10, 0, -12));
+                } else {
+                    lasers.push(new Laser(this.x, this.y - 15, 0, -12));
+                }
+            },
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                const thrustSize = 10 + Math.random() * 8;
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.8)';
+                ctx.beginPath();
+                ctx.moveTo(-8, 12);
+                ctx.lineTo(0, 12 + thrustSize);
+                ctx.lineTo(8, 12);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(245, 158, 11, 0.9)';
+                ctx.beginPath();
+                ctx.moveTo(-4, 12);
+                ctx.lineTo(0, 12 + thrustSize * 0.6);
+                ctx.lineTo(4, 12);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#22d3ee';
+                ctx.shadowColor = '#22d3ee';
+                ctx.shadowBlur = 10;
+                ctx.lineWidth = 3;
+                ctx.fillStyle = '#0f172a';
+
+                ctx.beginPath();
+                ctx.moveTo(0, -22);
+                ctx.lineTo(16, 12);
+                ctx.lineTo(6, 6);
+                ctx.lineTo(-6, 6);
+                ctx.lineTo(-16, 12);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#f43f5e';
+                ctx.shadowColor = '#f43f5e';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.moveTo(0, -12);
+                ctx.lineTo(4, 0);
+                ctx.lineTo(-4, 0);
+                ctx.closePath();
+                ctx.fill();
+
+                if (this.powerup === 'shield_buff' || this.shield > 70) {
+                    ctx.strokeStyle = this.powerup === 'shield_buff' ? '#fbbf24' : 'rgba(34, 211, 238, 0.4)';
+                    ctx.shadowColor = this.powerup === 'shield_buff' ? '#fbbf24' : '#22d3ee';
+                    ctx.shadowBlur = 15;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 30, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        };
+
+        // --- LAZER ---
+        class Laser {
+            constructor(x, y, vx, vy) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.radius = 3.5;
+                this.active = true;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.y < -50 || this.y > height + 50 || this.x < -50 || this.x > width + 50) {
+                    this.active = false;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.shadowColor = '#38bdf8';
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // --- DÜŞMAN ---
+        class Enemy {
+            constructor() {
+                this.x = Math.random() * (width - 60) + 30;
+                this.y = -50;
+                this.type = Math.random() > 0.75 ? 'fast' : 'scout';
+                this.width = this.type === 'fast' ? 26 : 38;
+                this.height = this.type === 'fast' ? 26 : 38;
+                this.speed = this.type === 'fast' ? 5 : 3;
+                this.color = this.type === 'fast' ? '#d946ef' : '#a855f7';
+                this.hp = this.type === 'fast' ? 1 : 2;
+                this.active = true;
+                this.amplitude = Math.random() * 2.5;
+                this.frequency = 0.02 + Math.random() * 0.03;
+                this.seed = Math.random() * 100;
+            }
+
+            update() {
+                this.y += this.speed;
+                this.x += Math.sin(this.y * this.frequency + this.seed) * this.amplitude;
+
+                if (this.y > height + 50) {
+                    this.active = false;
+                    player.shield = Math.max(0, player.shield - 5);
+                    updateHUD();
+                    if (player.shield <= 0) {
+                        endGame();
+                    }
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                ctx.strokeStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10;
+                ctx.lineWidth = 2.5;
+                ctx.fillStyle = '#0f172a';
+
+                if (this.type === 'fast') {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 14);
+                    ctx.lineTo(-12, -12);
+                    ctx.lineTo(12, -12);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 18);
+                    ctx.lineTo(18, 0);
+                    ctx.lineTo(8, -16);
+                    ctx.lineTo(-8, -16);
+                    ctx.lineTo(-18, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // --- ASTEROİT ---
+        class Asteroid {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = -60;
+                this.size = 20 + Math.random() * 40;
+                this.speed = 1.5 + Math.random() * 2.5;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.04;
+                this.active = true;
+                this.hp = Math.ceil(this.size / 15);
+                
+                this.points = [];
+                const maxPoints = 8 + Math.floor(Math.random() * 5);
+                for (let i = 0; i < maxPoints; i++) {
+                    const angle = (i / maxPoints) * Math.PI * 2;
+  
