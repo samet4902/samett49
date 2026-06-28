@@ -1,15 +1,13 @@
-```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Retro Uzay Savaşı - Galaxy Defender</title>
-    <!-- Tailwind CSS ve Font Awesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght=400;700;900&display=swap');
         body {
             font-family: 'Orbitron', sans-serif;
             background-color: #03001e;
@@ -33,10 +31,8 @@
 </head>
 <body class="flex items-center justify-center h-screen w-screen relative no-select">
 
-    <!-- Oyun Tuvali -->
     <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
 
-    <!-- Kullanıcı Arayüzü (HUD) -->
     <div id="hud" class="absolute top-4 left-4 right-4 z-10 flex justify-between items-center text-white pointer-events-none hidden">
         <div class="flex flex-col gap-1">
             <div class="text-xs text-cyan-400 tracking-widest">SKOR</div>
@@ -51,14 +47,12 @@
         </div>
     </div>
 
-    <!-- Aktif Güçlendirme Göstergesi -->
     <div id="powerupIndicator" class="absolute top-20 right-4 z-10 hidden text-right pointer-events-none">
         <span id="powerupText" class="text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 px-3 py-1 rounded-full font-bold tracking-widest animate-pulse">
             ÇİFT LAZER
         </span>
     </div>
 
-    <!-- Ana Menü -->
     <div id="menuScreen" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 px-6 text-center">
         <div class="max-w-md w-full p-8 rounded-2xl bg-gradient-to-b from-indigo-950/40 to-slate-900/60 border border-indigo-500/30 backdrop-blur-md shadow-2xl">
             <h1 class="text-4xl md:text-5xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-500 mb-2 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)] animate-pulse">
@@ -67,10 +61,10 @@
             <p class="text-slate-400 text-sm mb-8 tracking-widest uppercase">Retro Uzay Savaşçısı</p>
 
             <div class="space-y-4 mb-8">
-                <button id="startBtn" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-[1.02] active:scale-95 tracking-widest">
+                <button id="startBtn" type="button" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-[1.02] active:scale-95 tracking-widest cursor-pointer">
                     OYUNU BAŞLAT
                 </button>
-                <button id="soundToggleBtn" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm tracking-wide">
+                <button id="soundToggleBtn" type="button" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm tracking-wide cursor-pointer">
                     <i id="soundIcon" class="fas fa-volume-up"></i> <span id="soundText">SES: AÇIK</span>
                 </button>
             </div>
@@ -84,13 +78,11 @@
         </div>
     </div>
 
-    <!-- Oyun Bitti Ekranı -->
     <div id="gameOverScreen" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 px-6 text-center hidden">
         <div class="max-w-md w-full p-8 rounded-2xl bg-gradient-to-b from-rose-950/40 to-slate-900/60 border border-rose-500/30 backdrop-blur-md shadow-2xl">
             <h2 class="text-4xl font-black tracking-wider text-rose-500 mb-2 drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]">
                 OYUN BİTTİ
             </h2>
-            <!-- Kalkan bittiğinde görünecek özel mesaj -->
             <p class="text-slate-300 text-base mb-6 tracking-wide font-semibold">
                 Kaybettiğin için Muş'u sevmiyorsun. 🥺
             </p>
@@ -106,7 +98,7 @@
                 </div>
             </div>
 
-            <button id="restartBtn" class="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-rose-500/20 transition-all transform hover:scale-[1.02] active:scale-95 tracking-widest">
+            <button id="restartBtn" type="button" class="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-rose-500/20 transition-all transform hover:scale-[1.02] active:scale-95 tracking-widest cursor-pointer">
                 YENİDEN DENE
             </button>
         </div>
@@ -117,114 +109,104 @@
     </div>
 
     <script>
-        // --- SES SENTEZLEYİCİ (Web Audio API) ---
         const SoundFX = {
             enabled: true,
             ctx: null,
 
             init() {
+                if (!this.enabled) return;
                 if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    try {
+                        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    } catch (e) {
+                        console.log("AudioContext hatası yok sayıldı.");
+                    }
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume().catch(() => {});
                 }
             },
 
             playLaser() {
-                if (!this.enabled) return;
-                this.init();
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
-                
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc.start(now);
-                osc.stop(now + 0.15);
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } catch(e) {}
             },
 
             playExplosion() {
-                if (!this.enabled) return;
-                this.init();
-                const now = this.ctx.currentTime;
-                
-                const bufferSize = this.ctx.sampleRate * 0.4;
-                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1;
-                }
-                
-                const noise = this.ctx.createBufferSource();
-                noise.buffer = buffer;
-                
-                const filter = this.ctx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(400, now);
-                filter.frequency.exponentialRampToValueAtTime(10, now + 0.4);
-                
-                const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-                
-                noise.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                noise.start(now);
-                noise.stop(now + 0.4);
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const bufferSize = this.ctx.sampleRate * 0.4;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(400, now);
+                    filter.frequency.exponentialRampToValueAtTime(10, now + 0.4);
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    noise.start(now);
+                    noise.stop(now + 0.4);
+                } catch(e) {}
             },
 
             playPowerup() {
-                if (!this.enabled) return;
-                this.init();
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(200, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
-                
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc.start(now);
-                osc.stop(now + 0.3);
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } catch(e) {}
             },
 
             playHurt() {
-                if (!this.enabled) return;
-                this.init();
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.setValueAtTime(80, now + 0.1);
-                
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc.start(now);
-                osc.stop(now + 0.2);
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.setValueAtTime(80, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } catch(e) {}
             }
         };
 
-        // --- OYUN AYARLARI ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -243,19 +225,10 @@
         let touchActive = false;
         let touchX = 0, touchY = 0;
 
-        // --- OYUNCU GEMİSİ ---
         const player = {
-            x: 0,
-            y: 0,
-            width: 44,
-            height: 44,
-            speed: 7,
-            shield: 100,
-            maxShield: 100,
-            powerup: null,
-            powerupTimer: 0,
-            lastShot: 0,
-            shootCooldown: 220,
+            x: 0, y: 0, width: 44, height: 44, speed: 7,
+            shield: 100, maxShield: 100, powerup: null,
+            powerupTimer: 0, lastShot: 0, shootCooldown: 220,
 
             init() {
                 this.x = width / 2;
@@ -316,20 +289,10 @@
 
                 const thrustSize = 10 + Math.random() * 8;
                 ctx.fillStyle = 'rgba(239, 68, 68, 0.8)';
-                ctx.beginPath();
-                ctx.moveTo(-8, 12);
-                ctx.lineTo(0, 12 + thrustSize);
-                ctx.lineTo(8, 12);
-                ctx.closePath();
-                ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-8, 12); ctx.lineTo(0, 12 + thrustSize); ctx.lineTo(8, 12); ctx.closePath(); ctx.fill();
 
                 ctx.fillStyle = 'rgba(245, 158, 11, 0.9)';
-                ctx.beginPath();
-                ctx.moveTo(-4, 12);
-                ctx.lineTo(0, 12 + thrustSize * 0.6);
-                ctx.lineTo(4, 12);
-                ctx.closePath();
-                ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-4, 12); ctx.lineTo(0, 12 + thrustSize * 0.6); ctx.lineTo(4, 12); ctx.closePath(); ctx.fill();
 
                 ctx.strokeStyle = '#22d3ee';
                 ctx.shadowColor = '#22d3ee';
@@ -338,149 +301,249 @@
                 ctx.fillStyle = '#0f172a';
 
                 ctx.beginPath();
-                ctx.moveTo(0, -22);
-                ctx.lineTo(16, 12);
-                ctx.lineTo(6, 6);
-                ctx.lineTo(-6, 6);
-                ctx.lineTo(-16, 12);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-
-                ctx.fillStyle = '#f43f5e';
-                ctx.shadowColor = '#f43f5e';
-                ctx.shadowBlur = 8;
-                ctx.beginPath();
-                ctx.moveTo(0, -12);
-                ctx.lineTo(4, 0);
-                ctx.lineTo(-4, 0);
-                ctx.closePath();
-                ctx.fill();
+                ctx.moveTo(0, -22); ctx.lineTo(16, 12); ctx.lineTo(6, 6); ctx.lineTo(-6, 6); ctx.lineTo(-16, 12);
+                ctx.closePath(); ctx.fill(); ctx.stroke();
 
                 if (this.powerup === 'shield_buff' || this.shield > 70) {
                     ctx.strokeStyle = this.powerup === 'shield_buff' ? '#fbbf24' : 'rgba(34, 211, 238, 0.4)';
                     ctx.shadowColor = this.powerup === 'shield_buff' ? '#fbbf24' : '#22d3ee';
                     ctx.shadowBlur = 15;
                     ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 30, 0, Math.PI * 2);
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.stroke();
                 }
-
                 ctx.restore();
             }
         };
 
-        // --- LAZER ---
         class Laser {
-            constructor(x, y, vx, vy) {
-                this.x = x;
-                this.y = y;
-                this.vx = vx;
-                this.vy = vy;
-                this.radius = 3.5;
-                this.active = true;
-            }
+            constructor(x, y, vx, vy) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.radius = 3.5; this.active = true; }
+            update() { this.x += this.vx; this.y += this.vy; if (this.y < -50 || this.y > height + 50 || this.x < -50 || this.x > width + 50) this.active = false; }
+            draw() { ctx.save(); ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 8; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+        }
 
+        class Enemy {
+            constructor() {
+                this.x = Math.random() * (width - 60) + 30; this.y = -50;
+                this.type = Math.random() > 0.75 ? 'fast' : 'scout';
+                this.width = this.type === 'fast' ? 26 : 38; this.height = this.type === 'fast' ? 26 : 38;
+                this.speed = this.type === 'fast' ? 5 : 3; this.color = this.type === 'fast' ? '#d946ef' : '#a855f7';
+                this.hp = this.type === 'fast' ? 1 : 2; this.active = true;
+                this.amplitude = Math.random() * 2.5; this.frequency = 0.02 + Math.random() * 0.03; this.seed = Math.random() * 100;
+            }
             update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.y < -50 || this.y > height + 50 || this.x < -50 || this.x > width + 50) {
-                    this.active = false;
+                this.y += this.speed; this.x += Math.sin(this.y * this.frequency + this.seed) * this.amplitude;
+                if (this.y > height + 50) {
+                    this.active = false; player.shield = Math.max(0, player.shield - 5); updateHUD();
+                    if (player.shield <= 0) endGame();
                 }
             }
-
             draw() {
-                ctx.save();
-                ctx.shadowColor = '#38bdf8';
-                ctx.shadowBlur = 8;
-                ctx.fillStyle = '#ffffff';
+                ctx.save(); ctx.translate(this.x, this.y); ctx.strokeStyle = this.color; ctx.shadowColor = this.color; ctx.shadowBlur = 10; ctx.lineWidth = 2.5; ctx.fillStyle = '#0f172a';
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
+                if (this.type === 'fast') { ctx.moveTo(0, 14); ctx.lineTo(-12, -12); ctx.lineTo(12, -12); } 
+                else { ctx.moveTo(0, 18); ctx.lineTo(18, 0); ctx.lineTo(8, -16); ctx.lineTo(-8, -16); ctx.lineTo(-18, 0); }
+                ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
             }
         }
 
-        // --- DÜŞMAN ---
-        class Enemy {
+        class Asteroid {
             constructor() {
-                this.x = Math.random() * (width - 60) + 30;
-                this.y = -50;
-                this.type = Math.random() > 0.75 ? 'fast' : 'scout';
-                this.width = this.type === 'fast' ? 26 : 38;
-                this.height = this.type === 'fast' ? 26 : 38;
-                this.speed = this.type === 'fast' ? 5 : 3;
-                this.color = this.type === 'fast' ? '#d946ef' : '#a855f7';
-                this.hp = this.type === 'fast' ? 1 : 2;
-                this.active = true;
-                this.amplitude = Math.random() * 2.5;
-                this.frequency = 0.02 + Math.random() * 0.03;
-                this.seed = Math.random() * 100;
+                this.x = Math.random() * width; this.y = -60; this.size = 20 + Math.random() * 40; this.speed = 1.5 + Math.random() * 2.5;
+                this.rotation = Math.random() * Math.PI * 2; this.rotationSpeed = (Math.random() - 0.5) * 0.04; this.active = true; this.hp = Math.ceil(this.size / 15);
+                this.points = []; const maxPoints = 8 + Math.floor(Math.random() * 5);
+                for (let i = 0; i < maxPoints; i++) {
+                    const angle = (i / maxPoints) * Math.PI * 2; const offset = (Math.random() - 0.5) * (this.size * 0.35);
+                    this.points.push({ x: Math.cos(angle) * (this.size / 2 + offset), y: Math.sin(angle) * (this.size / 2 + offset) });
+                }
             }
+            update() { this.y += this.speed; this.rotation += this.rotationSpeed; if (this.y > height + 80) this.active = false; }
+            draw() {
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation); ctx.strokeStyle = '#64748b'; ctx.shadowColor = '#475569'; ctx.shadowBlur = 6; ctx.lineWidth = 2; ctx.fillStyle = '#1e293b';
+                ctx.beginPath(); ctx.moveTo(this.points[0].x, this.points[0].y);
+                for (let i = 1; i < this.points.length; i++) { ctx.lineTo(this.points[i].x, this.points[i].y); }
+                ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+            }
+        }
 
-            update() {
-                this.y += this.speed;
-                this.x += Math.sin(this.y * this.frequency + this.seed) * this.amplitude;
+        class PowerUp {
+            constructor() {
+                this.x = Math.random() * (width - 60) + 30; this.y = -40; this.speed = 2; this.size = 20; this.active = true;
+                const r = Math.random();
+                if (r < 0.4) { this.type = 'double'; this.color = '#fbbf24'; this.icon = 'D'; } 
+                else if (r < 0.7) { this.type = 'shield_buff'; this.color = '#10b981'; this.icon = 'S'; } 
+                else { this.type = 'triple'; this.color = '#ec4899'; this.icon = 'T'; }
+            }
+            update() { this.y += this.speed; if (this.y > height + 50) this.active = false; }
+            draw() {
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(Date.now() * 0.003); ctx.strokeStyle = this.color; ctx.shadowColor = this.color; ctx.shadowBlur = 12; ctx.lineWidth = 2.5; ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                ctx.beginPath(); ctx.rect(-this.size/2, -this.size/2, this.size, this.size); ctx.fill(); ctx.stroke();
+                ctx.rotate(-Date.now() * 0.003); ctx.fillStyle = this.color; ctx.font = 'bold 11px Orbitron'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(this.icon, 0, 0); ctx.restore();
+            }
+        }
 
-                if (this.y > height + 50) {
-                    this.active = false;
-                    player.shield = Math.max(0, player.shield - 5);
-                    updateHUD();
-                    if (player.shield <= 0) {
-                        endGame();
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.color = color; this.radius = 1 + Math.random() * 3;
+                const angle = Math.random() * Math.PI * 2; const force = 1 + Math.random() * 5;
+                this.vx = Math.cos(angle) * force; this.vy = Math.sin(angle) * force; this.alpha = 1; this.decay = 0.015 + Math.random() * 0.02; this.active = true;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.alpha -= this.decay; if (this.alpha <= 0) this.active = false; }
+            draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color; ctx.shadowColor = this.color; ctx.shadowBlur = 6; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+        }
+
+        class Star {
+            constructor(isBackdrop = false) { this.x = Math.random() * width; this.y = Math.random() * height; this.size = Math.random() * 2; this.speed = 0.2 + Math.random() * (isBackdrop ? 0.3 : 1.5); }
+            update() { this.y += this.speed; if (this.y > height) { this.y = 0; this.x = Math.random() * width; } }
+            draw() { ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.3 + Math.random() * 0.7) + ')'; ctx.fillRect(this.x, this.y, this.size, this.size); }
+        }
+
+        let lasers = [], enemies = [], asteroids = [], powerups = [], particles = [], stars = [];
+        for (let i = 0; i < 150; i++) { stars.push(new Star(i < 80)); }
+
+        let enemySpawnTimer = 0, asteroidSpawnTimer = 0, powerupSpawnTimer = 0;
+
+        function updateSpawners() {
+            const difficultyMultiplier = Math.min(2.5, 1 + score / 1000);
+            if (--enemySpawnTimer <= 0) { enemies.push(new Enemy()); enemySpawnTimer = Math.max(25, 100 - (difficultyMultiplier * 18)); }
+            if (--asteroidSpawnTimer <= 0) { asteroids.push(new Asteroid()); asteroidSpawnTimer = Math.max(35, 120 - (difficultyMultiplier * 15)); }
+            if (--powerupSpawnTimer <= 0) { powerups.push(new PowerUp()); powerupSpawnTimer = 400 + Math.random() * 400; }
+        }
+
+        function createExplosion(x, y, color, count = 12) { SoundFX.playExplosion(); for (let i = 0; i < count; i++) { particles.push(new Particle(x, y, color)); } }
+
+        function checkCollisions() {
+            for (let l = lasers.length - 1; l >= 0; l--) {
+                const laser = lasers[l]; if (!laser.active) continue;
+                for (let e = enemies.length - 1; e >= 0; e--) {
+                    const enemy = enemies[e]; if (!enemy.active) continue;
+                    const distance = Math.sqrt((laser.x - enemy.x)**2 + (laser.y - enemy.y)**2);
+                    if (distance < enemy.width / 2 + laser.radius) {
+                        laser.active = false; enemy.hp--; createExplosion(laser.x, laser.y, enemy.color, 4);
+                        if (enemy.hp <= 0) { enemy.active = false; createExplosion(enemy.x, enemy.y, enemy.color, 15); score += enemy.type === 'fast' ? 150 : 100; updateHUD(); }
+                        break;
                     }
                 }
             }
 
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-
-                ctx.strokeStyle = this.color;
-                ctx.shadowColor = this.color;
-                ctx.shadowBlur = 10;
-                ctx.lineWidth = 2.5;
-                ctx.fillStyle = '#0f172a';
-
-                if (this.type === 'fast') {
-                    ctx.beginPath();
-                    ctx.moveTo(0, 14);
-                    ctx.lineTo(-12, -12);
-                    ctx.lineTo(12, -12);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                } else {
-                    ctx.beginPath();
-                    ctx.moveTo(0, 18);
-                    ctx.lineTo(18, 0);
-                    ctx.lineTo(8, -16);
-                    ctx.lineTo(-8, -16);
-                    ctx.lineTo(-18, 0);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
+            for (let l = lasers.length - 1; l >= 0; l--) {
+                const laser = lasers[l]; if (!laser.active) continue;
+                for (let a = asteroids.length - 1; a >= 0; a--) {
+                    const ast = asteroids[a]; if (!ast.active) continue;
+                    const distance = Math.sqrt((laser.x - ast.x)**2 + (laser.y - ast.y)**2);
+                    if (distance < ast.size / 2 + laser.radius) {
+                        laser.active = false; ast.hp--; createExplosion(laser.x, laser.y, '#64748b', 3);
+                        if (ast.hp <= 0) { ast.active = false; createExplosion(ast.x, ast.y, '#475569', 20); score += Math.round(ast.size * 2); updateHUD(); }
+                        break;
+                    }
                 }
+            }
 
-                ctx.restore();
+            const playerRadius = player.width / 2;
+            for (let e = enemies.length - 1; e >= 0; e--) {
+                const enemy = enemies[e]; if (!enemy.active) continue;
+                if (Math.sqrt((player.x - enemy.x)**2 + (player.y - enemy.y)**2) < playerRadius + enemy.width / 2) { enemy.active = false; createExplosion(enemy.x, enemy.y, enemy.color, 25); damagePlayer(30); }
+            }
+            for (let a = asteroids.length - 1; a >= 0; a--) {
+                const ast = asteroids[a]; if (!ast.active) continue;
+                if (Math.sqrt((player.x - ast.x)**2 + (player.y - ast.y)**2) < playerRadius + ast.size / 2) { ast.active = false; createExplosion(ast.x, ast.y, '#64748b', 25); damagePlayer(Math.round(ast.size * 0.8)); }
+            }
+            for (let p = powerups.length - 1; p >= 0; p--) {
+                const power = powerups[p]; if (!power.active) continue;
+                if (Math.sqrt((player.x - power.x)**2 + (player.y - power.y)**2) < playerRadius + power.size / 2) { power.active = false; SoundFX.playPowerup(); activatePowerup(power.type); }
             }
         }
 
-        // --- ASTEROİT ---
-        class Asteroid {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = -60;
-                this.size = 20 + Math.random() * 40;
-                this.speed = 1.5 + Math.random() * 2.5;
-                this.rotation = Math.random() * Math.PI * 2;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.04;
-                this.active = true;
-                this.hp = Math.ceil(this.size / 15);
-                
-                this.points = [];
-                const maxPoints = 8 + Math.floor(Math.random() * 5);
-                for (let i = 0; i < maxPoints; i++) {
-                    const angle = (i / maxPoints) * Math.PI * 2;
-                                                              
+        function damagePlayer(dmg) {
+            SoundFX.playHurt();
+            player.shield -= (player.powerup === 'shield_buff') ? Math.round(dmg * 0.3) : dmg;
+            if (player.shield <= 0) { player.shield = 0; endGame(); }
+            updateHUD();
+        }
+
+        function activatePowerup(type) {
+            const indicator = document.getElementById('powerupIndicator'); const pText = document.getElementById('powerupText');
+            if (type === 'shield_buff') { player.shield = Math.min(player.maxShield, player.shield + 40); pText.textContent = 'KALKAN YENİLENDİ'; pText.className = "text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1 rounded-full font-bold tracking-widest"; } 
+            else if (type === 'double') { player.powerup = 'double'; player.powerupTimer = 450; pText.textContent = 'ÇİFT LAZER AKTİF'; pText.className = "text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 px-3 py-1 rounded-full font-bold tracking-widest"; } 
+            else if (type === 'triple') { player.powerup = 'triple'; player.powerupTimer = 350; pText.textContent = 'HİPER ÜÇLÜ LAZER'; pText.className = "text-xs bg-pink-500/20 text-pink-400 border border-pink-500/40 px-3 py-1 rounded-full font-bold tracking-widest"; }
+            indicator.classList.remove('hidden'); updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('scoreVal').textContent = score; const shieldBar = document.getElementById('shieldBar'); const percent = (player.shield / player.maxShield) * 100; shieldBar.style.width = percent + '%';
+            if (percent < 30) shieldBar.className = "bg-gradient-to-r from-red-500 to-rose-600 h-full rounded-full animate-pulse";
+            else if (percent < 60) shieldBar.className = "bg-gradient-to-r from-yellow-500 to-amber-600 h-full rounded-full";
+            else shieldBar.className = "bg-gradient-to-r from-cyan-400 to-emerald-500 h-full rounded-full";
+        }
+
+        function initGame() {
+            score = 0; lasers = []; enemies = []; asteroids = []; powerups = []; particles = []; player.init();
+            enemySpawnTimer = 50; asteroidSpawnTimer = 100; powerupSpawnTimer = 300;
+            updateHUD();
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            document.getElementById('touchGuide').classList.remove('hidden');
+            gameState = 'PLAYING';
+        }
+
+        function endGame() {
+            gameState = 'GAMEOVER'; createExplosion(player.x, player.y, '#e11d48', 45);
+            if (score > highscore) { highscore = score; localStorage.setItem('galaxy_defender_highscore', highscore); }
+            document.getElementById('finalScore').textContent = score; document.getElementById('highScore').textContent = highscore;
+            document.getElementById('hud').classList.add('hidden'); document.getElementById('touchGuide').classList.add('hidden'); document.getElementById('powerupIndicator').classList.add('hidden');
+            setTimeout(() => { if (gameState === 'GAMEOVER') document.getElementById('gameOverScreen').classList.remove('hidden'); }, 1000);
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, width, height);
+            for (let star of stars) { star.update(); star.draw(); }
+            if (gameState === 'PLAYING') {
+                updateSpawners(); player.update();
+                for (let i = lasers.length - 1; i >= 0; i--) { lasers[i].update(); if (lasers[i].active) lasers[i].draw(); else lasers.splice(i, 1); }
+                for (let i = enemies.length - 1; i >= 0; i--) { enemies[i].update(); if (enemies[i].active) enemies[i].draw(); else enemies.splice(i, 1); }
+                for (let i = asteroids.length - 1; i >= 0; i--) { asteroids[i].update(); if (asteroids[i].active) asteroids[i].draw(); else asteroids.splice(i, 1); }
+                for (let i = powerups.length - 1; i >= 0; i--) { powerups[i].update(); if (powerups[i].active) powerups[i].draw(); else powerups.splice(i, 1); }
+                checkCollisions(); player.draw();
+            }
+            for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].active) particles[i].draw(); else particles.splice(i, 1); }
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('keydown', (e) => { keys[e.code] = true; if (e.code === 'Space') e.preventDefault(); });
+        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+        let mousePressed = false;
+        window.addEventListener('mousedown', () => { if (gameState === 'PLAYING') mousePressed = true; });
+        window.addEventListener('mouseup', () => { mousePressed = false; });
+
+        canvas.addEventListener('touchstart', (e) => { if (gameState !== 'PLAYING') return; touchActive = true; const touch = e.touches[0]; touchX = touch.clientX; touchY = touch.clientY; }, { passive: true });
+        canvas.addEventListener('touchmove', (e) => { if (gameState !== 'PLAYING') return; const touch = e.touches[0]; touchX = touch.clientX; touchY = touch.clientY; }, { passive: true });
+        canvas.addEventListener('touchend', () => { touchActive = false; });
+
+        // Tetikleyiciler kesinleştirildi
+        document.getElementById('startBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            try { SoundFX.init(); } catch(err){}
+            initGame();
+        });
+        document.getElementById('startBtn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            try { SoundFX.init(); } catch(err){}
+            initGame();
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', () => initGame());
+
+        const soundToggleBtn = document.getElementById('soundToggleBtn');
+        const soundIcon = document.getElementById('soundIcon');
+        const soundText = document.getElementById('soundText');
+        soundToggleBtn.addEventListener('click', () => {
+            SoundFX.enabled = !SoundFX.enabled;
+            if (SoundFX.enabled) { soundIcon.className = "fas fa-volume-up"; soundText.textContent = "SES: AÇIK"; try{SoundFX.init();}catch(e){} } 
+            else { soundIcon.className = "fas fa-volume-mute"; soundText.textContent = "SES: KAPALI"; }
+        });
+
+        loop();
+    </script>
+</body>
+</html>
+```eof
